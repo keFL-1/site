@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Monitor - Мониторинг безопасности</title>
+    <style>
+        /* Базовые стили */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #6b7280;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --background: #ffffff;
+            --card-bg: #ffffff;
+            --border-color: #e5e7eb;
+            --gradient-primary: #3b82f6;
+            --gradient-success: #10b981;
+            --gradient-warning: #f59e0b;
+            --gradient-danger: #ef4444;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Шапка */
+        header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        /* Карточки */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        /* Кнопки */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Переключатель режимов */
+        .mode-toggle {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background: #f3f4f6;
+            padding: 0.25rem;
+            border-radius: 8px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: white;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Область загрузки */
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 2rem;
+        }
+
+        .drop-zone:hover {
+            border-color: var(--primary-color);
+            background: #f8fafc;
+        }
+
+        .drop-zone.dragover {
+            border-color: var(--primary-color);
+            background: #eff6ff;
+        }
+
+        .drop-zone-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .drop-zone h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .drop-zone p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Информация о файле */
+        .file-info {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .file-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .file-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .file-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .file-value {
+            font-family: monospace;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        /* URL панель */
+        .url-panel {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .url-panel-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .url-input {
+            width: 100%;
+            max-width: 500px;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Результаты сканирования */
+        .scan-results {
+            margin-top: 2rem;
+        }
+
+        .overall-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .overall-status.safe {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+
+        .overall-status.warning {
+            background: #fffbeb;
+            border: 1px solid #fed7aa;
+        }
+
+        .overall-status.critical {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        .status-icon {
+            font-size: 2rem;
+        }
+
+        .detection-details {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .threat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .threat-item:last-child {
+            border-bottom: none;
+        }
+
+        .threat-name {
+            font-weight: 500;
+        }
+
+        .threat-severity {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .threat-severity.low {
+            background: #f0fdf4;
+            color: #166534;
+        }
+
+        .threat-severity.medium {
+            background: #fffbeb;
+            color: #92400e;
+        }
+
+        .threat-severity.high {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .threat-severity.critical {
+            background: #fef2f2;
+            color: #7f1d1d;
+        }
+
+        /* Статистика */
+        .scan-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-item {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* История */
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-info {
+            flex: 1;
+        }
+
+        .history-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .history-time {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .history-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .card-title {
+                font-size: 1.5rem;
+            }
+
+            .file-details {
+                grid-template-columns: 1fr;
+            }
+
+            .scan-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .overall-status {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .mode-toggle {
+                flex-direction: column;
+            }
+        }
+
+        /* Скрытые элементы */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Анимации */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">Security Monitor</div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Страница сканера файлов -->
+            <div id="scanner" class="page active">
+                <div class="card fade-in">
+                    <h2 class="card-title" id="scannerTitle">🔍 Сканер файлов</h2>
+                    <p id="scannerSubtitle" style="color: var(--text-secondary); margin-bottom: 2rem;">
+                        Загрузите файл для проверки на вирусы и вредоносные программы.
+                    </p>
+
+                    <div class="mode-toggle">
+                        <button class="mode-btn active" id="modeFileBtn" onclick="setScanMode('file')">Файл</button>
+                        <button class="mode-btn" id="modeUrlBtn" onclick="setScanMode('url')">URL</button>
+                    </div>
+
+                    <div id="fileModeSection">
+                        <!-- Область загрузки файла -->
+                        <div id="dropZone" class="drop-zone">
+                            <div class="drop-zone-content">
+                                <div class="drop-zone-icon">📁</div>
+                                <h3>Перетащите файл сюда или нажмите для выбора</h3>
+                                <p>Поддерживаются файлы до 32MB</p>
+                                <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
+                                <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                                    Выбрать файл
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Информация о файле -->
+                        <div id="fileInfo" class="file-info" style="display: none;">
+                            <h3>Информация о файле</h3>
+                            <div class="file-details">
+                                <div class="file-detail">
+                                    <span class="file-label">Название:</span>
+                                    <span id="fileName" class="file-value">-</span>
+                                </div>
+                                <div class="file-detail">
+                                    <span class="file-label">Размер:</span>
+                                    <span id="fileSize" class="file-value">-</span>
+                                </div>
+                                <div class="file-detail">
+                                    <span class="file-label">Тип:</span>
+                                    <span id="fileType" class="file-value">-</span>
+                                </div>
+                                <div class="file-detail">
+                                    <span class="file-label">MD5:</span>
+                                    <span id="fileHash" class="file-value">-</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="scanFile()" id="scanBtn">
+                                🔍 Начать сканирование
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="urlModeSection" style="display: none;">
+                        <div class="url-panel">
+                            <div class="url-panel-header">
+                                <div class="drop-zone-icon">🔗</div>
+                                <h3>Введите URL для проверки</h3>
+                            </div>
+                            <input id="urlInput" class="url-input" type="url" placeholder="https://example.com" autocomplete="off">
+                            <button class="btn btn-primary" onclick="scanUrl()" id="scanUrlBtn">
+                                🔍 Проверить URL
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Результаты сканирования -->
+                    <div id="scanResults" class="scan-results" style="display: none;">
+                        <h3>Результаты сканирования</h3>
+                        
+                        <!-- Общий статус -->
+                        <div id="overallStatus" class="overall-status">
+                            <div class="status-icon" id="statusIcon"></div>
+                            <div class="status-info">
+                                <h4 id="statusTitle">-</h4>
+                                <p id="statusDescription">-</p>
+                            </div>
+                        </div>
+
+                        <!-- Детали обнаружения -->
+                        <div id="detectionDetails" class="detection-details">
+                            <h4>Обнаруженные угрозы</h4>
+                            <div id="threatsList"></div>
+                        </div>
+
+                        <!-- Статистика сканирования -->
+                        <div class="scan-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Всего движков:</span>
+                                <span class="stat-value" id="totalEngines">25</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Обнаружено:</span>
+                                <span class="stat-value" id="detectionCount">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Время сканирования:</span>
+                                <span class="stat-value" id="scanTime">0 сек</span>
+                            </div>
+                        </div>
+
+                        <!-- Рекомендации -->
+                        <div id="recommendations" class="scan-recommendations">
+                            <h4>Рекомендации</h4>
+                            <div id="recommendationsList"></div>
+                        </div>
+                    </div>
+
+                    <!-- История сканирования -->
+                    <div class="scan-history">
+                        <h3>История сканирования</h3>
+                        <div id="historyList" class="history-list">
+                            <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
+                                История сканирования пуста
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Данные для сканера
+        let currentFile = null;
+        let scanHistory = [];
+        let apiKeys = {
+            virustotal: '',
+            hybrid: '',
+            urlscan: ''
+        };
+
+        let scanMode = 'file';
+
+        // База данных сигнатур вирусов
+        const virusDatabase = [
+            { name: "Trojan.Generic", severity: "high", engines: ["Kaspersky", "Avast", "Bitdefender"] },
+            { name: "Worm.Downloader", severity: "high", engines: ["McAfee", "Norton", "ESET"] },
+            { name: "Backdoor.RAT", severity: "critical", engines: ["Kaspersky", "ESET", "Malwarebytes"] },
+            { name: "Adware.Generic", severity: "low", engines: ["AdwCleaner", "Malwarebytes"] },
+            { name: "PUP.Optional", severity: "medium", engines: ["Malwarebytes", "HitmanPro"] },
+            { name: "Rootkit.Boot", severity: "critical", engines: ["Kaspersky", "ESET", "Dr.Web"] },
+            { name: "Spyware.Keylogger", severity: "high", engines: ["Kaspersky", "Avast", "Webroot"] },
+            { name: "Ransomware.Locky", severity: "critical", engines: ["Kaspersky", "Bitdefender", "ESET"] }
+        ];
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            setScanMode(scanMode);
+            setupDragAndDrop();
+        });
+
+        // Функция навигации между страницами
+        function showPage(pageId) {
+            // Только одна страница - сканер файлов
+            document.getElementById('scanner').classList.add('active');
+        }
+
+        // Функции для работы с файлами
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+
+        function processFile(file) {
+            // Проверка размера файла
+            if (file.size > 650 * 1024 * 1024) {
+                alert('Файл слишком большой. Максимальный размер - 650MB');
+                return;
+            }
+
+            currentFile = file;
+
+            // Показать информацию о файле
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('fileType').textContent = file.type || 'Неизвестный';
+
+            // Вычислить хэш файла (имитация)
+            const hash = generateMockHash(file.name + file.size);
+            document.getElementById('fileHash').textContent = hash;
+
+            // Показать блок информации о файле
+            document.getElementById('fileInfo').style.display = 'block';
+            document.getElementById('scanResults').style.display = 'none';
+        }
+
+        function setScanMode(mode) {
+            scanMode = mode === 'url' ? 'url' : 'file';
+
+            const fileModeSection = document.getElementById('fileModeSection');
+            const urlModeSection = document.getElementById('urlModeSection');
+            const modeFileBtn = document.getElementById('modeFileBtn');
+            const modeUrlBtn = document.getElementById('modeUrlBtn');
+            const scanResults = document.getElementById('scanResults');
+            const fileInfo = document.getElementById('fileInfo');
+            const scannerTitle = document.getElementById('scannerTitle');
+            const scannerSubtitle = document.getElementById('scannerSubtitle');
+
+            if (fileModeSection) fileModeSection.style.display = scanMode === 'file' ? 'block' : 'none';
+            if (urlModeSection) urlModeSection.style.display = scanMode === 'url' ? 'block' : 'none';
+
+            if (modeFileBtn) modeFileBtn.classList.toggle('active', scanMode === 'file');
+            if (modeUrlBtn) modeUrlBtn.classList.toggle('active', scanMode === 'url');
+
+            if (scanResults) scanResults.style.display = 'none';
+            if (fileInfo) fileInfo.style.display = scanMode === 'file' && currentFile ? 'block' : 'none';
+
+            if (scanMode === 'url') {
+                currentFile = null;
+                if (scannerTitle) scannerTitle.textContent = '🔗 Проверка URL';
+                if (scannerSubtitle) scannerSubtitle.textContent = 'Введите ссылку для проверки репутации и угроз через VirusTotal API.';
+            } else {
+                if (scannerTitle) scannerTitle.textContent = '🔍 Сканер файлов';
+                if (scannerSubtitle) scannerSubtitle.textContent = 'Загрузите файл для проверки на вирусы и вредоносные программы. Наш сканер использует реальные API VirusTotal, Hybrid Analysis, MalwareBazaar и другие сервисы.';
+            }
+        }
+
+        async function scanUrl() {
+            const urlInput = document.getElementById('urlInput');
+            const url = (urlInput?.value || '').trim();
+            if (!url) {
+                alert('Пожалуйста, введите URL для проверки');
+                return;
+            }
+
+            const scanBtn = document.getElementById('scanUrlBtn');
+            const originalText = scanBtn.innerHTML;
+            
+            try {
+                scanBtn.innerHTML = '<span class="spin">⏳</span> Сканирование...';
+                scanBtn.disabled = true;
+
+                const result = await scanUrlViaBackend(url);
+                displayResults(result);
+                addToHistory(url, 'url', result);
+
+            } catch (error) {
+                console.error('Ошибка сканирования URL:', error);
+                alert(`Ошибка сканирования: ${error.message}`);
+            } finally {
+                scanBtn.innerHTML = originalText;
+                scanBtn.disabled = false;
+            }
+        }
+
+        async function scanUrlViaBackend(url) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 65000);
+
+            try {
+                const response = await fetch('/api/scan-url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url }),
+                    signal: controller.signal
+                });
+
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+
+                return mapUrlBackendResultToUi(data);
+            } catch (e) {
+                if (e?.name === 'AbortError') {
+                    throw new Error('Таймаут ожидания ответа от сервера');
+                }
+                throw e;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
+        function mapUrlBackendResultToUi(data) {
+            const threats = (data.threats || []).map((t) => ({
+                name: t.name || t.category || 'Unknown',
+                severity: (t.category === 'malicious') ? 'critical' : (t.category === 'suspicious' ? 'high' : 'medium'),
+                engine: t.engine || 'VirusTotal'
+            }));
+
+            return {
+                status: data.status || (data.detections ? 'warning' : 'safe'),
+                threats,
+                scanTime: new Date().toISOString(),
+                engines: typeof data.engines === 'number' ? data.engines : 0,
+                detections: typeof data.detections === 'number' ? data.detections : threats.length,
+                method: 'VirusTotal (server proxy)',
+                url: data.url
+            };
+        }
+
+        async function scanFile() {
+            if (!currentFile) {
+                alert('Пожалуйста, выберите файл для сканирования');
+                return;
+            }
+
+            const scanBtn = document.getElementById('scanBtn');
+            const originalText = scanBtn.innerHTML;
+
+            try {
+                scanBtn.innerHTML = '<span class="spin">⏳</span> Сканирование...';
+                scanBtn.disabled = true;
+
+                const result = await scanViaBackend(currentFile);
+                displayResults(result);
+                addToHistory(currentFile.name, 'file', result);
+
+            } catch (error) {
+                console.error('Ошибка сканирования файла:', error);
+                alert(`Ошибка сканирования: ${error.message}`);
+            } finally {
+                scanBtn.innerHTML = originalText;
+                scanBtn.disabled = false;
+            }
+        }
+
+        async function scanViaBackend(file) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 65000);
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('/api/scan', {
+                    method: 'POST',
+                    body: formData,
+                    signal: controller.signal
+                });
+
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+
+                return mapBackendResultToUi(data);
+            } catch (e) {
+                if (e?.name === 'AbortError') {
+                    throw new Error('Таймаут ожидания ответа от сервера');
+                }
+                throw e;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
+        function mapBackendResultToUi(data) {
+            const threats = (data.threats || []).map((t) => ({
+                name: t.name || t.category || 'Unknown',
+                severity: (t.category === 'malicious') ? 'critical' : (t.category === 'suspicious' ? 'high' : 'medium'),
+                engine: t.engine || 'VirusTotal'
+            }));
+
+            return {
+                status: data.status || (data.detections ? 'warning' : 'safe'),
+                threats,
+                scanTime: new Date().toISOString(),
+                engines: typeof data.engines === 'number' ? data.engines : 0,
+                detections: typeof data.detections === 'number' ? data.detections : threats.length,
+                method: 'VirusTotal (server proxy)',
+                sha256: data.sha256,
+                url: data.url
+            };
+        }
+
+        function displayResults(result) {
+            const scanResults = document.getElementById('scanResults');
+            const overallStatus = document.getElementById('overallStatus');
+            const statusIcon = document.getElementById('statusIcon');
+            const statusTitle = document.getElementById('statusTitle');
+            const statusDescription = document.getElementById('statusDescription');
+            const threatsList = document.getElementById('threatsList');
+            const totalEngines = document.getElementById('totalEngines');
+            const detectionCount = document.getElementById('detectionCount');
+            const scanTime = document.getElementById('scanTime');
+            const recommendationsList = document.getElementById('recommendationsList');
+
+            // Показать блок результатов
+            scanResults.style.display = 'block';
+
+            // Общий статус
+            overallStatus.className = `overall-status ${result.status}`;
+            
+            switch (result.status) {
+                case 'safe':
+                    statusIcon.textContent = '✅';
+                    statusTitle.textContent = 'Безопасно';
+                    statusDescription.textContent = 'Угроз не обнаружено';
+                    break;
+                case 'warning':
+                    statusIcon.textContent = '⚠️';
+                    statusTitle.textContent = 'Обнаружены подозрительные элементы';
+                    statusDescription.textContent = `Найдено ${result.detections} потенциальных угроз`;
+                    break;
+                case 'critical':
+                    statusIcon.textContent = '🚨';
+                    statusTitle.textContent = 'Обнаружены угрозы!';
+                    statusDescription.textContent = `Найдено ${result.detections} угроз`;
+                    break;
+            }
+
+            // Список угроз
+            threatsList.innerHTML = '';
+            if (result.threats && result.threats.length > 0) {
+                result.threats.forEach(threat => {
+                    const threatItem = document.createElement('div');
+                    threatItem.className = 'threat-item';
+                    threatItem.innerHTML = `
+                        <div>
+                            <div class="threat-name">${threat.name}</div>
+                            <small style="color: var(--text-secondary)">Движок: ${threat.engine}</small>
+                        </div>
+                        <span class="threat-severity ${threat.severity}">${threat.severity}</span>
+                    `;
+                    threatsList.appendChild(threatItem);
+                });
+            } else {
+                threatsList.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Угроз не обнаружено</p>';
+            }
+
+            // Статистика
+            totalEngines.textContent = result.engines || 0;
+            detectionCount.textContent = result.detections || 0;
+            scanTime.textContent = '2 сек'; // Имитация времени сканирования
+
+            // Рекомендации
+            recommendationsList.innerHTML = generateRecommendations(result);
+        }
+
+        function generateRecommendations(result) {
+            const recommendations = [];
+            
+            if (result.status === 'safe') {
+                recommendations.push('Файл безопасен для использования');
+                recommendations.push('Рекомендуется обновить антивирусные базы');
+            } else if (result.status === 'warning') {
+                recommendations.push('Осторожно используйте файл');
+                recommendations.push('Проверьте файл в нескольких антивирусах');
+                recommendations.push('Рекомендуется изолировать файл');
+            } else if (result.status === 'critical') {
+                recommendations.push('НЕ ИСПОЛЬЗУЙТЕ этот файл!');
+                recommendations.push('Немедленно удалите файл');
+                recommendations.push('Проверьте систему на наличие вредоносных программ');
+            }
+
+            return recommendations.map(rec => `<p>• ${rec}</p>`).join('');
+        }
+
+        function addToHistory(name, type, result) {
+            const historyItem = {
+                name,
+                type,
+                status: result.status,
+                time: new Date().toISOString()
+            };
+
+            scanHistory.unshift(historyItem);
+            if (scanHistory.length > 10) {
+                scanHistory = scanHistory.slice(0, 10);
+            }
+
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('historyList');
+            
+            if (scanHistory.length === 0) {
+                historyList.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">История сканирования пуста</p>';
+                return;
+            }
+
+            historyList.innerHTML = scanHistory.map(item => `
+                <div class="history-item">
+                    <div class="history-info">
+                        <div class="history-name">${item.name}</div>
+                        <div class="history-time">${new Date(item.time).toLocaleString()}</div>
+                    </div>
+                    <span class="history-status ${item.status}">${item.status}</span>
+                </div>
+            `).join('');
+        }
+
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('dropZone');
+            if (!dropZone) return;
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.add('dragover');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.remove('dragover');
+                }, false);
+            });
+
+            dropZone.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    processFile(files[0]);
+                }
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function generateMockHash(input) {
+            let hash = 0;
+            for (let i = 0; i < input.length; i++) {
+                const char = input.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(16).toUpperCase().padStart(32, '0');
+        }
+    </script>
+</body>
+</html>

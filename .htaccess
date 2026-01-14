@@ -1,0 +1,8 @@
+# Passenger configuration for Node.js
+PassengerEnabled on
+PassengerAppType node
+PassengerStartupFile app.js
+
+# Environment variables
+PassengerEnvVar NODE_ENV production
+PassengerEnvVar VT_API_KEY fa4c4c7029197eee1f40c6fd4a806bb85d80edf9d4d9d473321a77583e856c65
